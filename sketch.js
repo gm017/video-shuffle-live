@@ -62,7 +62,7 @@ function setup() {
     }
     videoSwitchCount = 0;
 
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 17; i++) {
         const vid = createVideo([`assets/video/tiny/vid${i}.mp4`]);
         prepareVideo(vid);
         videos.push(vid);
