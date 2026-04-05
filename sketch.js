@@ -285,6 +285,20 @@ function initializeControls() {
         }
     });
     
+    // Set up toggle button
+    const toggleButton = document.getElementById('toggle-controls');
+    const controlsDiv = document.getElementById('controls');
+    
+    toggleButton.addEventListener('click', () => {
+        if (controlsDiv.classList.contains('hidden')) {
+            controlsDiv.classList.remove('hidden');
+            toggleButton.textContent = 'Hide Controls';
+        } else {
+            controlsDiv.classList.add('hidden');
+            toggleButton.textContent = 'Show Controls';
+        }
+    });
+    
     // Set initial values
     document.getElementById('switchInterval').value = SWITCH_INTERVAL;
     document.getElementById('overlayDuration').value = OVERLAY_DURATION;
