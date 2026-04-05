@@ -219,6 +219,13 @@ function switchVideo(index) {
     currentVideoIndex = index;
     videoSwitchCount += 1;
     
+    // Pause all other videos to reduce CPU load
+    for (let i = 0; i < videos.length; i++) {
+        if (i !== index) {
+            videos[i].pause();
+        }
+    }
+    
     // Change tint after every N switches
     if (videoSwitchCount >= VIDEO_SWITCHES_PER_TINT) {
         currentTintColor = getRandomTint();
