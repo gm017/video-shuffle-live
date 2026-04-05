@@ -37,8 +37,12 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     frameRate(60);
     
-    // Initialize first random tint
-    currentTintColor = getRandomTint();
+    // Initialize tint color
+    if (TINT_RANDOMIZATION_ENABLED) {
+        currentTintColor = getRandomTint();
+    } else {
+        currentTintColor = [255, 255, 255]; // Default white tint (no change)
+    }
     videoSwitchCount = 0;
 
     for (let i = 1; i <= 9; i++) {
