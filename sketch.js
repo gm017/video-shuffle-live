@@ -6,7 +6,6 @@ let currentVideoIndex = 0;
 let videoOrder = [];
 let orderPosition = 0;
 let lastSwitch = 0;
-const SWITCH_INTERVAL = 300;
 
 let overlayVideo = null;
 let overlayStartTime = 0;
@@ -14,14 +13,32 @@ let overlayVisible = false;
 let overlayX = 0;
 let overlayY = 0;
 let overlaySize = 0;
-const OVERLAY_DURATION = 3000;
 let nextOverlayCheck = 0;
+let currentTintColor = [255, 255, 255];
+let videoSwitchCount = 0;
+
+// Timing configuration
+
+const SWITCH_INTERVAL = 1000;
+const OVERLAY_DURATION = 3000;
 const OVERLAY_CHECK_INTERVAL = 2000;
 const OVERLAY_PROBABILITY = 0.5;
+
+// Overlay border configuration
+const OVERLAY_BORDER_COLOR = [255, 0, 0]; // RGB
+const OVERLAY_BORDER_WIDTH = 0;
+
+// Video tint configuration
+const VIDEO_TINT_ALPHA = 255;
+const VIDEO_SWITCHES_PER_TINT = 3; // Change tint color every N video switches 
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     frameRate(60);
+    
+    // Initialize first random tint
+    currentTintColor = getRandomTint();
+    videoSwitchCount = 0;
 
     for (let i = 1; i <= 9; i++) {
         const vid = createVideo([`assets/video/tiny/vid${i}.mp4`]);
@@ -73,7 +90,9 @@ function draw() {
     }
 
     if (videos[currentVideoIndex]) {
+        tint(currentTintColor[0], currentTintColor[1], currentTintColor[2], VIDEO_TINT_ALPHA);
         image(videos[currentVideoIndex], 0, 0, width, height);
+        noTint();
     }
 
     // Ensure main video stays playing
@@ -87,26 +106,38 @@ function draw() {
 function handleOverlay() {
     const now = millis();
 
-    // Check if it's time to potentially show a new overlay
-    if (now >= nextOverlayCheck) {
-        nextOverlayCheck = now + OVERLAY_CHECK_INTERVAL;
-        
-        if (Math.random() < OVERLAY_PROBABILITY) {
-            startOverlay();
-        }
-    }
-
     // Handle currently playing overlay
     if (overlayVisible && overlayVideo) {
         const elapsed = now - overlayStartTime;
 
-        if (elapsed < OVERLAY_DURATION) {            // Ensure overlay video is playing
+        if (elapsed < OVERLAY_DURATION) {
+            // Ensure overlay video is playing
             if (overlayVideo.elt.paused) {
                 overlayVideo.elt.play().catch(() => {});
-            }            image(overlayVideo, overlayX, overlayY, overlaySize, overlaySize);
+            }
+            tint(currentTintColor[0], currentTintColor[1], currentTintColor[2], VIDEO_TINT_ALPHA);
+            image(overlayVideo, overlayX, overlayY, overlaySize, overlaySize);
+            noTint();
+            
+            // Draw border around overlay
+            stroke(OVERLAY_BORDER_COLOR[0], OVERLAY_BORDER_COLOR[1], OVERLAY_BORDER_COLOR[2]);
+            strokeWeight(OVERLAY_BORDER_WIDTH);
+            noFill();
+            rect(overlayX, overlayY, overlaySize, overlaySize);
         } else {
             overlayVideo.pause();
             overlayVisible = false;
+            // Start the 2-second cooldown before next overlay can appear
+            nextOverlayCheck = now + OVERLAY_CHECK_INTERVAL;
+        }
+    } else {
+        // Only check for new overlay when current one is gone
+        if (now >= nextOverlayCheck) {
+            nextOverlayCheck = now + OVERLAY_CHECK_INTERVAL;
+            
+            if (Math.random() < OVERLAY_PROBABILITY) {
+                startOverlay();
+            }
         }
     }
 }
@@ -186,6 +217,13 @@ function shuffleArray(array) {
 
 function switchVideo(index) {
     currentVideoIndex = index;
+    videoSwitchCount += 1;
+    
+    // Change tint after every N switches
+    if (videoSwitchCount >= VIDEO_SWITCHES_PER_TINT) {
+        currentTintColor = getRandomTint();
+        videoSwitchCount = 0;
+    }
 }
 
 function showMessage(msg) {
@@ -193,6 +231,14 @@ function showMessage(msg) {
     textAlign(CENTER, CENTER);
     textSize(24);
     text(msg, width / 2, height / 2);
+}
+
+function getRandomTint() {
+    return [
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256)
+    ];
 }
 
 function windowResized() {
