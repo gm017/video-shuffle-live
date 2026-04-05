@@ -36,6 +36,8 @@ const TINT_RANDOMIZATION_ENABLED = false; // Set to false to disable random tint
 function setup() {
     createCanvas(windowWidth, windowHeight);
     frameRate(60);
+      textFont('Verdana');
+
     
     // Initialize tint color
     if (TINT_RANDOMIZATION_ENABLED) {
@@ -72,15 +74,21 @@ function onVideoLoaded() {
 }
 
 function draw() {
-    background(20);
+    background(255);
 
     if (!videosReady) {
-        showMessage('Loading videos... please wait');
+        fill(255);
+        textAlign(CENTER, CENTER);
+        textSize(24);
+        text('loading', width / 2, height / 2);
         return;
     }
 
     if (!playbackStarted) {
-        showMessage('Press SPACE or click to start');
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(24);
+        text('click', width / 2, height / 2);
         return;
     }
 
@@ -238,12 +246,7 @@ function switchVideo(index) {
     }
 }
 
-function showMessage(msg) {
-    fill(255);
-    textAlign(CENTER, CENTER);
-    textSize(24);
-    text(msg, width / 2, height / 2);
-}
+
 
 function getRandomTint() {
     return [
