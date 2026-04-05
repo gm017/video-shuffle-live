@@ -7,8 +7,118 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/p5.js"></script>
     <script src="js/addons/p5.sound.min.js"></script>
+    <style>
+        #controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 4px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .value-display {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+    </style>
 </head>
 <body>
+    <div id="controls">
+        <h3>Controls</h3>
+        
+        <div class="control-group" data-control="switchInterval">
+            <label>Video Switch Interval (ms)</label>
+            <input type="number" id="switchInterval" min="50" max="5000" step="50">
+            <div class="value-display" id="switchInterval-val"></div>
+        </div>
+
+        <div class="control-group" data-control="overlayDuration">
+            <label>Overlay Duration (ms)</label>
+            <input type="number" id="overlayDuration" min="500" max="10000" step="500">
+            <div class="value-display" id="overlayDuration-val"></div>
+        </div>
+
+        <div class="control-group" data-control="overlayCheckInterval">
+            <label>Overlay Check Interval (ms)</label>
+            <input type="number" id="overlayCheckInterval" min="500" max="10000" step="500">
+            <div class="value-display" id="overlayCheckInterval-val"></div>
+        </div>
+
+        <div class="control-group" data-control="overlayProbability">
+            <label>Overlay Probability (0-1)</label>
+            <input type="number" id="overlayProbability" min="0" max="1" step="0.1">
+            <div class="value-display" id="overlayProbability-val"></div>
+        </div>
+
+        <div class="control-group" data-control="overlayBorderWidth">
+            <label>Overlay Border Width (px)</label>
+            <input type="number" id="overlayBorderWidth" min="0" max="20" step="1">
+            <div class="value-display" id="overlayBorderWidth-val"></div>
+        </div>
+
+        <div class="control-group" data-control="borderColorR">
+            <label>Border Color R</label>
+            <input type="number" id="borderColorR" min="0" max="255" step="1">
+            <div class="value-display" id="borderColorR-val"></div>
+        </div>
+
+        <div class="control-group" data-control="borderColorG">
+            <label>Border Color G</label>
+            <input type="number" id="borderColorG" min="0" max="255" step="1">
+            <div class="value-display" id="borderColorG-val"></div>
+        </div>
+
+        <div class="control-group" data-control="borderColorB">
+            <label>Border Color B</label>
+            <input type="number" id="borderColorB" min="0" max="255" step="1">
+            <div class="value-display" id="borderColorB-val"></div>
+        </div>
+
+        <div class="control-group" data-control="tintAlpha">
+            <label>Tint Alpha (0-255)</label>
+            <input type="number" id="tintAlpha" min="0" max="255" step="5">
+            <div class="value-display" id="tintAlpha-val"></div>
+        </div>
+
+        <div class="control-group" data-control="switchesPerTint">
+            <label>Switches Per Colour Change</label>
+            <input type="number" id="switchesPerTint" min="1" max="20" step="1">
+            <div class="value-display" id="switchesPerTint-val"></div>
+        </div>
+
+        <div class="control-group" data-control="tintEnabled">
+            <label>
+                <input type="checkbox" id="tintEnabled">
+                Enable Colour Randomization
+            </label>
+        </div>
+    </div>
+
     <script src="sketch.js"></script>
 </body>
 </html>
