@@ -73,7 +73,8 @@ function setup() {
 
 function prepareVideo(vid) {
     vid.hide();
-    vid.size(640, 360);
+    // Make video responsive to screen size
+    vid.size(min(width, 640), min(height, 360));
     vid.volume(0);
     vid.attribute('muted', '');
     vid.attribute('playsinline', '');
@@ -94,15 +95,15 @@ function draw() {
     if (!videosReady) {
         fill(255);
         textAlign(CENTER, CENTER);
-        textSize(24);
-        text('loading', width / 2, height / 2);
+        textSize(min(24, width / 20));
+        text('Loading videos...\nPlease wait', width / 2, height / 2);
         return;
     }
 
     if (!playbackStarted) {
         fill(0);
         textAlign(CENTER, CENTER);
-        textSize(24);
+        textSize(min(24, width / 20));
         text('click', width / 2, height / 2);
         return;
     }
@@ -198,6 +199,14 @@ function mousePressed() {
     }
 }
 
+// Add touch support for mobile
+function touchStarted() {
+    if (videosReady && !playbackStarted) {
+        startPlayback();
+        return false; // Prevent default touch behavior
+    }
+}
+
 function startPlayback() {
     if (playbackStarted) {
         return;
@@ -223,10 +232,12 @@ function ensureVideoPlaying(vid) {
             .then(() => { })
             .catch((error) => {
                 console.warn('Video autoplay blocked, will retry on interaction');
-                // Retry on next user interaction
-                document.addEventListener('click', () => {
+                // Retry on next user interaction (click or touch)
+                const retryPlay = () => {
                     vid.elt.play().catch(() => { });
-                }, { once: true });
+                };
+                document.addEventListener('click', retryPlay, { once: true });
+                document.addEventListener('touchstart', retryPlay, { once: true });
             });
     }
 }
@@ -285,10 +296,16 @@ function initializeControls() {
         }
     });
     
-    // Set up toggle button
-    const toggleButton = document.getElementById('toggle-controls');
+    // Hide controls on very small screens by default
     const controlsDiv = document.getElementById('controls');
+    const toggleButton = document.getElementById('toggle-controls');
     
+    if (window.innerWidth < 600) {
+        controlsDiv.classList.add('hidden');
+        toggleButton.textContent = 'Show Controls';
+    }
+    
+    // Set up toggle button
     toggleButton.addEventListener('click', () => {
         if (controlsDiv.classList.contains('hidden')) {
             controlsDiv.classList.remove('hidden');

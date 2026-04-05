@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>video-shuffle-live</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/p5.js"></script>
@@ -10,18 +10,19 @@
     <style>
         #controls {
             position: fixed;
-            top: 10px;
+            top: 50px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
             padding: 15px;
             border-radius: 8px;
             font-family: monospace;
             font-size: 12px;
-            max-width: 300px;
-            max-height: 90vh;
+            max-width: min(300px, calc(100vw - 20px));
+            max-height: calc(100vh - 60px);
             overflow-y: auto;
             z-index: 1000;
+            box-sizing: border-box;
         }
         #controls.hidden {
             display: none;
@@ -30,7 +31,7 @@
             position: fixed;
             top: 10px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
             border: none;
             padding: 8px 12px;
@@ -39,6 +40,7 @@
             font-size: 12px;
             cursor: pointer;
             z-index: 1001;
+            touch-action: manipulation;
         }
         .control-group {
             margin-bottom: 10px;
