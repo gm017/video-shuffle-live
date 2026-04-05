@@ -17,6 +17,16 @@ let nextOverlayCheck = 0;
 let currentTintColor = [255, 255, 255];
 let videoSwitchCount = 0;
 
+// Detect mobile device
+let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               ('ontouchstart' in window) || 
+               (window.innerWidth <= 800 && window.innerHeight <= 600);
+
+// Mobile-specific variables
+let mobilePlayAttempts = 0;
+let maxMobilePlayAttempts = 5;
+let mobileFallbackMode = false;
+
 // Timing configuration
 
 let SWITCH_INTERVAL = 2000;
@@ -66,6 +76,14 @@ function setup() {
         const vid = createVideo([`assets/video/tiny/vid${i}.mp4`]);
         prepareVideo(vid);
         videos.push(vid);
+        
+        // On mobile, try to load videos immediately and add extra event listeners
+        if (isMobile) {
+            vid.elt.load();
+            vid.elt.addEventListener('loadstart', () => console.log(`Video ${i} load started`));
+            vid.elt.addEventListener('progress', () => console.log(`Video ${i} loading progress`));
+            vid.elt.addEventListener('canplay', () => console.log(`Video ${i} can play`));
+        }
     }
 
     initVideoOrder();
@@ -78,14 +96,24 @@ function prepareVideo(vid) {
     vid.volume(0);
     vid.attribute('muted', '');
     vid.attribute('playsinline', '');
+    vid.attribute('preload', 'auto');
     vid.elt.muted = true;
+    vid.elt.playsInline = true;
     vid.elt.addEventListener('canplaythrough', onVideoLoaded);
+    vid.elt.addEventListener('error', (e) => {
+        console.error('Video load error:', e);
+    });
+    vid.elt.addEventListener('loadeddata', () => {
+        console.log('Video loaded data');
+    });
 }
 
 function onVideoLoaded() {
     loadedCount += 1;
+    console.log(`Video ${loadedCount} loaded`);
     if (loadedCount === videos.length) {
         videosReady = true;
+        console.log('All videos ready!');
     }
 }
 
@@ -104,7 +132,16 @@ function draw() {
         fill(0);
         textAlign(CENTER, CENTER);
         textSize(min(24, width / 20));
-        text('click', width / 2, height / 2);
+        let message = 'click';
+        if (isMobile) {
+            message += '\n(Mobile detected)';
+            if (videosReady) {
+                message += '\nVideos loaded!';
+            } else {
+                message += '\nLoading videos...';
+            }
+        }
+        text(message, width / 2, height / 2);
         return;
     }
 
@@ -124,9 +161,34 @@ function draw() {
         noTint();
     }
 
-    // Ensure main video stays playing
-    if (playbackStarted && videos[currentVideoIndex] && videos[currentVideoIndex].elt.paused) {
-        videos[currentVideoIndex].elt.play().catch(() => { });
+    // Ensure main video stays playing (more aggressive on mobile)
+    if (playbackStarted && videos[currentVideoIndex]) {
+        if (videos[currentVideoIndex].elt.paused) {
+            if (isMobile) {
+                mobilePlayAttempts++;
+                if (mobilePlayAttempts < maxMobilePlayAttempts) {
+                    // On mobile, try multiple times with delay
+                    setTimeout(() => {
+                        if (videos[currentVideoIndex] && videos[currentVideoIndex].elt.paused) {
+                            videos[currentVideoIndex].elt.play().catch(() => {
+                                console.log('Mobile video play failed, attempt', mobilePlayAttempts);
+                            });
+                        }
+                    }, 100 * mobilePlayAttempts);
+                } else {
+                    // Show error message after max attempts
+                    fill(255, 0, 0);
+                    textAlign(CENTER, CENTER);
+                    textSize(min(20, width / 25));
+                    text('Video playback blocked\nTry refreshing the page\nor use desktop browser', width / 2, height / 2);
+                    return;
+                }
+            } else {
+                videos[currentVideoIndex].elt.play().catch(() => { });
+            }
+        } else {
+            mobilePlayAttempts = 0; // Reset on successful play
+        }
     }
 
     handleOverlay();
@@ -202,9 +264,12 @@ function mousePressed() {
 // Add touch support for mobile
 function touchStarted() {
     if (videosReady && !playbackStarted) {
+        console.log('Touch detected, starting playback');
         startPlayback();
         return false; // Prevent default touch behavior
     }
+    // Allow continued touch interaction
+    return true;
 }
 
 function startPlayback() {
@@ -212,9 +277,14 @@ function startPlayback() {
         return;
     }
 
-    videos.forEach((vid) => {
+    console.log('Starting playback, isMobile:', isMobile);
+    
+    videos.forEach((vid, index) => {
         vid.loop();
-        ensureVideoPlaying(vid);
+        // On mobile, only try to play if video is ready
+        if (!isMobile || vid.elt.readyState >= 3) { // HAVE_FUTURE_DATA or higher
+            ensureVideoPlaying(vid);
+        }
     });
 
     initVideoOrder();
@@ -262,6 +332,14 @@ function switchVideo(index) {
     for (let i = 0; i < videos.length; i++) {
         if (i !== index) {
             videos[i].pause();
+        }
+    }
+
+    // On mobile, ensure the current video is set to loop and try to play if ready
+    if (isMobile && videos[index]) {
+        videos[index].loop();
+        if (videos[index].elt.readyState >= 3) { // HAVE_FUTURE_DATA
+            ensureVideoPlaying(videos[index]);
         }
     }
 
@@ -315,6 +393,17 @@ function initializeControls() {
             toggleButton.textContent = 'Show Controls';
         }
     });
+    
+    // Add direct mobile touch listener
+    if (isMobile) {
+        document.addEventListener('touchstart', (e) => {
+            if (videosReady && !playbackStarted) {
+                console.log('Direct touch detected, starting playback');
+                e.preventDefault();
+                startPlayback();
+            }
+        }, { passive: false });
+    }
     
     // Set initial values
     document.getElementById('switchInterval').value = SWITCH_INTERVAL;
