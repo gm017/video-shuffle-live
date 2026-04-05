@@ -31,7 +31,7 @@ const OVERLAY_BORDER_WIDTH = 0;
 // Video tint configuration
 const VIDEO_TINT_ALPHA = 255;
 const VIDEO_SWITCHES_PER_TINT = 3; // Change tint color every N video switches 
-const TINT_RANDOMIZATION_ENABLED = true; // Set to false to disable random tint changes 
+const TINT_RANDOMIZATION_ENABLED = false; // Set to false to disable random tint changes 
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
